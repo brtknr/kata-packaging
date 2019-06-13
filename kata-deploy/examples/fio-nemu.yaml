@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    run: fio-nemu
+  name: fio-nemu
+spec:
+  selector:
+    matchLabels:
+      run: fio-nemu
+  template:
+    metadata:
+      labels:
+        run: fio-nemu
+    spec:
+      runtimeClassName: kata-nemu
+      containers:
+      - image: stackhpc/fio:v3.1.2
+        imagePullPolicy: Always
+        name: busybox
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 200m
+        volumeMounts:
+        - mountPath: /cephfs
+          name: cephfs
+        - mountPath: /beegfs
+          name: beegfs
+        - mountPath: /host
+          name: host
+        - mountPath: /dev/shm
+          name: dshm
+      volumes:
+      - name: cephfs
+        hostPath:
+          path: /alaska/bharat
+      - name: beegfs
+        hostPath:
+          path: /mnt/storage-nvme/bharat
+      - name: host
+        hostPath:
+          path: /tmp/bharat
+          type: DirectoryOrCreate
+      - name: dshm
+        emptyDir:
+          medium: Memory
+        
+      restartPolicy: Always
