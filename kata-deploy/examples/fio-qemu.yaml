@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: fio-qemu
+  name: fio-qemu
+spec:
+  selector:
+    matchLabels:
+      run: fio-qemu
+  template:
+    metadata:
+      labels:
+        run: fio-qemu
+    spec:
+      runtimeClassName: kata-qemu-virtiofs
+      containers:
+      - image: stackhpc/fio:v3.1.2
+        imagePullPolicy: Always
+        name: busybox
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 200m
+        volumeMounts:
+        - mountPath: /cephfs
+          name: cephfs
+        - mountPath: /beegfs
+          name: beegfs
+      volumes:
+      - name: cephfs
+        hostPath:
+          path: /alaska/bharat
+      - name: beegfs
+        hostPath:
+          path: /mnt/storage-nvme/bharat
+      restartPolicy: Always
